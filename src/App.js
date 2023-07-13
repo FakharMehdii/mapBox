@@ -1,25 +1,44 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useRef, useEffect, useState } from "react";
+import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
+import { TopBar } from "./Components/TopBar";
 
-function App() {
+mapboxgl.accessToken =
+  "pk.eyJ1IjoiZmFraGFybWVoZGkiLCJhIjoiY2xrMTU3ajBiMDNvcjNmamtuaTM1ZXQzaiJ9.6tkP4L4eJbxeTYCrzQGzWg";
+
+export default function App() {
+  const mapContainer = useRef(null);
+  const map = useRef(null);
+  const [lng, setLng] = useState(69.3451);
+  const [lat, setLat] = useState(30.3753);
+  const [zoom, setZoom] = useState(5);
+
+  useEffect(() => {
+    if (map.current) return;
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [lng, lat],
+      zoom: zoom,
+    });
+  });
+  useEffect(() => {
+    if (!map.current) return;
+    map.current.on("move", () => {
+      setLng(map.current.getCenter().lng.toFixed(4));
+      setLat(map.current.getCenter().lat.toFixed(4));
+      setZoom(map.current.getZoom().toFixed(2));
+    });
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <TopBar lng={lng} lat={lat} map={map.current} />
+      <div>
+        <span className="sidebar">
+          Longitude: {lng} | Latitude: {lat} | Zoom: {zoom}
+        </span>
+        <div ref={mapContainer} className="map-container" />
+      </div>
+    </>
   );
 }
-
-export default App;
